@@ -1,0 +1,338 @@
+#!/usr/bin/env bash
+
+## Configurable varibales
+
+installdir="/usr/local/bin"     # Installation directory
+tmpdir="/tmp"                   # Temporary directory for where files will be downloaded and extracted
+
+## END of configurable variables
+
+# Variables
+dependencies=("bzip2" "curl" "rsync" "tar" "unzip" "wget")
+apps=("bat" "duf" "dust" "exa" "hcloud" "hugo" "rclone" "restic")
+options=("dependencies" "help" "install" "info" "update" "uninstall" "version")
+scriptversion="1.0.0"
+
+# Check arguments count
+argscount=$#
+check_argscount () {
+	if [ $argscount -lt $1 ]; then
+		printf "ERROR: Missing arguments!\n\n"
+		help
+		exit 1
+	fi
+	if [ $argscount -gt $1 ]; then
+		printf "ERROR: Too many arguments!\n\n"
+		help
+		exit 1
+	fi
+}
+
+# Check if package is intalled
+check_package () {
+	command -v $1 >/dev/null 2>&1 \
+	&& printf "%s is installed\n" $1 \
+	|| printf "%s is NOT installed\n" $1
+}
+
+# Check dependecies
+check_dependencies () {
+	for i in "${dependencies[@]}"
+	do
+		command -v $i >/dev/null 2>&1 || {
+		printf "A required package is missing: %s\n" $i
+		exit 1;
+		}
+	done
+}
+
+# Print help
+help () {
+	if [ "$1" = "help" ]; then
+		printf "%s v%s\nA Go and Rust binaries installer\n\n" $(basename $0) $scriptversion
+	fi
+        printf "Usage: %s [OPTION] [APP]\n" $(basename $0)
+	printf "Example: %s install bat\n\n" $(basename $0)
+	printf "Options:\n"
+	printf "\tdependencies\t - list all dependencies and check if they're installed\n"
+	printf "\thelp\t\t - print this help message\n"
+	printf "\tinfo\t\t - list all apps and check if they're installed\n"
+	printf "\tinfo [APP]\t - check if an app is installed and its local and latest available versions\n"
+	printf "\tinstall [APP]\t - install an app\n"
+	printf "\tupdate [APP]\t - update an app to its latest version\n"
+	printf "\tuninstall [APP]\t - uninstall an app\n"
+        printf "\tversion\t\t - print %s version\n\n" $(basename $0)
+	printf "Available apps:\n"
+	printf "\tbat\t - A cat(1) clone with wings\n"
+	printf "\tduf\t - Disk Usage/Free Utility - a better 'df' alternative\n"
+	printf "\tdust\t - A more intuitive version of du in rust\n"
+	printf "\texa\t - A modern replacement for ‘ls’\n"
+	printf "\thcloud\t - A command-line interface for Hetzner Cloud\n"
+	printf "\thugo\t - The world’s fastest framework for building websites\n"
+	printf "\trclone\t - rsync for cloud storage\n"
+	printf "\trestic\t - Fast, secure, efficient backup program\n"
+	printf "\n"
+}
+
+# Prompt to confirm action
+confirmation () {
+        while true; do
+                read -p "${1} ${2}. Are you sure? [y/n] " yn
+                case $yn in
+                [Yy][Ee][Ss]|[Yy] ) printf "\n"; break;;
+                [Nn][Oo]|[Nn] ) exit 0;;
+                * ) printf "\vPlease answer yes or no.\n";;
+                esac
+        done
+}
+
+# Check latest version
+check_latest () {
+	if [ $1 = "bat" ]; then	repo="sharkdp/bat"; fi
+	if [ $1 = "duf" ]; then repo="muesli/duf"; fi
+	if [ $1 = "dust" ]; then repo="bootandy/dust"; fi
+	if [ $1 = "exa" ]; then repo="ogham/exa"; fi
+	if [ $1 = "hcloud" ]; then repo="hetznercloud/cli"; fi
+	if [ $1 = "hugo" ]; then repo="gohugoio/hugo"; fi
+	if [ $1 = "rclone" ]; then repo="rclone/rclone"; fi
+	if [ $1 = "restic" ]; then repo="restic/restic"; fi
+	latestrelease=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+}
+
+# Check local version
+check_local_version () {
+	if [ $1 = hcloud ] || [ $1 = hugo ] || [ $1 = restic ]; then
+		localversion=$($1 version)
+	else
+		localversion=$($1 --version)
+	fi
+}
+
+# Install functions
+install_bat () {
+        printf "Downloading...\n" && \
+	check_latest bat && \
+        mkdir $tmpdir/bat && cd $tmpdir/bat && \
+        wget -q https://github.com/sharkdp/bat/releases/download/v$latestrelease/bat-v$latestrelease-x86_64-unknown-linux-gnu.tar.gz && \
+        printf "Unpacking...\n" && \
+        tar -xf bat-v$latestrelease-x86_64-unknown-linux-gnu.tar.gz && \
+        printf "Installing...\n" && \
+        rsync --archive --chown=root:root $tmpdir/bat/bat-v$latestrelease-x86_64-unknown-linux-gnu/bat $installdir/ && \
+        printf "Cleaning up...\n" && \
+        rm -rf $tmpdir/bat && \
+        printf "Done!\n"
+}
+install_duf () {
+        printf "Downloading...\n" && \
+        check_latest duf && \
+        mkdir $tmpdir/duf && cd $tmpdir/duf && \
+        wget -q https://github.com/muesli/duf/releases/download/v$latestrelease/duf_${latestrelease}_linux_x86_64.tar.gz && \
+        printf "Unpacking...\n" && \
+        tar -xf duf_${latestrelease}_linux_x86_64.tar.gz && \
+        printf "Installing...\n" && \
+        rsync --archive --chown=root:root $tmpdir/duf/duf $installdir/ && \
+        printf "Cleaning up...\n" && \
+        rm -rf $tmpdir/duf && \
+        printf "Done!\n"
+}
+install_dust () {
+        printf "Downloading...\n" && \
+        check_latest dust && \
+        mkdir $tmpdir/dust && cd $tmpdir/dust && \
+        wget -q https://github.com/bootandy/dust/releases/download/v$latestrelease/dust-v$latestrelease-x86_64-unknown-linux-gnu.tar.gz && \
+        printf "Unpacking...\n" && \
+        tar -xf dust-v$latestrelease-x86_64-unknown-linux-gnu.tar.gz && \
+        printf "Installing...\n" && \
+        rsync --archive --chown=root:root $tmpdir/dust/dust-v$latestrelease-x86_64-unknown-linux-gnu/dust $installdir/ && \
+        printf "Cleaning up...\n" && \
+        rm -rf $tmpdir/dust && \
+        printf "Done!\n"
+}
+install_exa () {
+        printf "Downloading...\n" && \
+	check_latest exa && \
+        mkdir $tmpdir/exa && cd $tmpdir/exa && \
+        wget -q https://github.com/ogham/exa/releases/download/v$latestrelease/exa-linux-x86_64-v$latestrelease.zip && \
+        printf "Unpacking...\n" && \
+        unzip -xq exa-linux-x86_64-v$latestrelease.zip && \
+        printf "Installing...\n" && \
+        rsync --archive --chown=root:root $tmpdir/exa/bin/exa $installdir/ && \
+        printf "Cleaning up...\n" && \
+        rm -rf $tmpdir/exa && \
+        printf "Done!\n"
+}
+install_hcloud () {
+        printf "Downloading...\n" && \
+	check_latest hcloud && \
+        mkdir $tmpdir/hcloud && cd $tmpdir/hcloud && \
+        wget -q https://github.com/hetznercloud/cli/releases/download/v$latestrelease/hcloud-linux-amd64.tar.gz && \
+        printf "Unpacking...\n" && \
+        tar -xf hcloud-linux-amd64.tar.gz && \
+        printf "Installing...\n" && \
+        rsync --archive --chown=root:root $tmpdir/hcloud/hcloud $installdir/ && \
+        printf "Cleaning up...\n" && \
+        rm -rf $tmpdir/hcloud && \
+        printf "Done!\n"
+}
+install_hugo () {
+        printf "Downloading...\n" && \
+	check_latest hugo && \
+        mkdir $tmpdir/hugo && cd $tmpdir/hugo && \
+        wget -q https://github.com/gohugoio/hugo/releases/download/v$latestrelease/hugo_extended_${latestrelease}_Linux-64bit.tar.gz && \
+        printf "Unpacking...\n" && \
+        tar -xf hugo_extended_${latestrelease}_Linux-64bit.tar.gz && \
+        printf "Installing...\n" && \
+        rsync --archive --chown=root:root $tmpdir/hugo/hugo $installdir/ && \
+        printf "Cleaning up...\n" && \
+        rm -rf $tmpdir/hugo && \
+        printf "Done!\n"
+}
+install_rclone () {
+        printf "Downloading...\n" && \
+	check_latest rclone && \
+        mkdir $tmpdir/rclone && cd $tmpdir/rclone && \
+        wget -q https://github.com/rclone/rclone/releases/download/v$latestrelease/rclone-v$latestrelease-linux-amd64.zip && \
+        printf "Unpacking...\n" && \
+        unzip -xq rclone-v$latestrelease-linux-amd64.zip && \
+        printf "Installing...\n" && \
+        rsync --archive --chown=root:root $tmpdir/rclone/rclone-v$latestrelease-linux-amd64/rclone $installdir/ && \
+        printf "Cleaning up...\n" && \
+        rm -rf $tmpdir/rclone && \
+        printf "Done!\n"
+}
+install_restic () {
+        printf "Downloading...\n" && \
+	check_latest restic && \
+        mkdir $tmpdir/restic && cd $tmpdir/restic && \
+        wget -q https://github.com/restic/restic/releases/download/v$latestrelease/restic_${latestrelease}_linux_amd64.bz2 && \
+        printf "Unpacking...\n" && \
+        bzip2 -d restic_${latestrelease}_linux_amd64.bz2 && \
+        printf "Installing...\n" && \
+        rsync --archive --chown=root:root --chmod=+x $tmpdir/restic/restic_${latestrelease}_linux_amd64 $installdir/ && \
+        mv $installdir/restic_${latestrelease}_linux_amd64 $installdir/restic && \
+        printf "Cleaning up...\n" && \
+        rm -rf $tmpdir/restic && \
+        printf "Done!\n"
+}
+
+# Check if running as sudo
+if [[ $UID != 0 ]]; then
+        printf "Please run %s with sudo.\nExample: sudo %s %s\n" $(basename $0) $(basename $0) "$*"
+        exit 1
+fi
+
+# Give error message if no arguments
+if [ $# -eq 0 ]; then
+        printf "ERROR: Missing arguments!\n\n"
+        help
+	exit 1
+fi
+
+# Give error message if no valid option
+if ! [[ "${options[@]}" =~ (^|[[:space:]])"$1"($|[[:space:]]) ]]; then
+        printf "ERROR: No valid option!\n\n"
+        help
+	exit 1
+fi
+
+# Dependecies option
+if [ $1 = "dependencies" ]; then
+	check_argscount 1
+	for i in "${dependencies[@]}"
+        do
+                check_package $i
+        done
+fi
+
+# Help option
+if [ $1 = "help" ]; then
+	check_argscount 1
+	help $1
+fi
+
+# Install option
+if [ $1 = "install" ]; then
+	check_argscount 2
+	if ! [[ "${apps[@]}" =~ (^|[[:space:]])"$2"($|[[:space:]]) ]]; then
+        	printf "ERROR: No valid app!\n\n"
+        	help
+		exit 1
+	fi
+	if command -v $2 >/dev/null 2>&1; then
+                printf "%s is ALREADY installed\nUse the update command to get the latest release\n" $2
+		printf "Example: sudo %s update %s\n" $(basename $0) $2
+		exit 1
+	fi
+	check_dependencies && \
+	confirmation Installing $2 && \
+	install_$2
+fi
+
+# Info option
+if [ $1 = "info" ] && [ $# -eq 1 ]; then
+	for i in "${apps[@]}"
+        do
+               	check_package $i
+        done
+fi
+if [ $1 = "info" ] && [ $# -eq 2 ]; then
+	if ! [[ "${apps[@]}" =~ (^|[[:space:]])"$2"($|[[:space:]]) ]]; then
+		printf "ERROR: No valid app!\n\n"
+		help
+		exit 1
+	fi
+	if command -v $2 >/dev/null 2>&1; then
+                printf "%s is installed\n\n" $2
+		check_local_version $2 && \
+		printf "Local version:\n%s\n\n" "$localversion"
+	else
+		printf "%s is NOT installed\n" $2
+	fi
+	check_latest $2 && \
+	printf "Latest release:\n%s\n" $latestrelease
+fi
+if [ $1 = "info" ] && [ $# -gt 2 ];then
+	printf "ERROR: Too many arguments!\n\n"
+	help
+	exit 1
+fi
+
+# Update option
+if [ $1 = "update" ]; then
+	check_argscount 2
+        if ! [[ "${apps[@]}" =~ (^|[[:space:]])"$2"($|[[:space:]]) ]]; then
+                printf "ERROR: No valid app!\n\n"
+                help
+                exit 1
+        fi
+        if ! command -v $2 >/dev/null 2>&1; then
+                printf "%s is NOT installed\nUse the install command to get it\n" $2
+                printf "Example: sudo %s install %s\n" $(basename $0) $2
+                exit 1
+        fi
+        check_dependencies && \
+	confirmation Updating $2 && \
+        install_$2
+fi
+
+# Uninstall option
+if [ $1 = "uninstall" ]; then
+	check_argscount 2
+	if ! [[ "${apps[@]}" =~ (^|[[:space:]])"$2"($|[[:space:]]) ]]; then
+                printf "ERROR: No valid app!\n\n"
+                help
+                exit 1
+        fi
+	if ! command -v $2 >/dev/null 2>&1; then
+		printf "ERROR: %s is NOT installed\n" $2
+		exit 1
+	fi
+	confirmation Uninstalling $2
+	rm -rf $installdir/$2
+	printf "Done!\n"
+fi
+
+if [ $1 = "version" ]; then
+        check_argscount 1
+        printf "v%s\n" $scriptversion
+fi
