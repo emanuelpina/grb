@@ -11,7 +11,7 @@ tmpdir="/tmp"                   # Temporary directory for where files will be do
 dependencies=("bzip2" "curl" "rsync" "tar" "unzip" "wget")
 apps=("bat" "duf" "dust" "exa" "hcloud" "hugo" "rclone" "restic")
 options=("dependencies" "help" "install" "info" "update" "uninstall" "version")
-scriptversion="1.0.0"
+scriptversion="1.1.0"
 
 # Check arguments count
 argscount=$#
@@ -21,7 +21,7 @@ check_argscount () {
 		help
 		exit 1
 	fi
-	if [ $argscount -gt $1 ]; then
+	if [ $argscount -gt $2 ]; then
 		printf "ERROR: Too many arguments!\n\n"
 		help
 		exit 1
@@ -54,14 +54,16 @@ help () {
         printf "Usage: %s [OPTION] [APP]\n" $(basename $0)
 	printf "Example: %s install bat\n\n" $(basename $0)
 	printf "Options:\n"
-	printf "\tdependencies\t - list all dependencies and check if they're installed\n"
-	printf "\thelp\t\t - print this help message\n"
-	printf "\tinfo\t\t - list all apps and check if they're installed\n"
-	printf "\tinfo [APP]\t - check if an app is installed and its local and latest available versions\n"
-	printf "\tinstall [APP]\t - install an app\n"
-	printf "\tupdate [APP]\t - update an app to its latest version\n"
-	printf "\tuninstall [APP]\t - uninstall an app\n"
-        printf "\tversion\t\t - print %s version\n\n" $(basename $0)
+	printf "\tdependencies\t\t - list all dependencies and check if they're installed\n"
+	printf "\thelp\t\t\t - print this help message\n"
+	printf "\tinfo\t\t\t - list all apps and check if they're installed\n"
+	printf "\tinfo [APP]\t\t - check if an app is installed and its local and latest available versions\n"
+	printf "\tinstall [APP]\t\t - install an app\n"
+	printf "\tinstall [APP] [VERSION]\t - install a specific version of an app\n"
+	printf "\tupdate [APP]\t\t - update an app to its latest version\n"
+	printf "\tupdate [APP] [VERSION]\t - update an app to a specific version\n"
+	printf "\tuninstall [APP]\t\t - uninstall an app\n"
+        printf "\tversion\t\t\t - print %s version\n\n" $(basename $0)
 	printf "Available apps:\n"
 	printf "\tbat\t - A cat(1) clone with wings\n"
 	printf "\tduf\t - Disk Usage/Free Utility - a better 'df' alternative\n"
@@ -112,6 +114,7 @@ check_local_version () {
 install_bat () {
         printf "Downloading...\n" && \
 	check_latest bat && \
+	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
         mkdir $tmpdir/bat && cd $tmpdir/bat && \
         wget -q https://github.com/sharkdp/bat/releases/download/v$latestrelease/bat-v$latestrelease-x86_64-unknown-linux-gnu.tar.gz && \
         printf "Unpacking...\n" && \
@@ -125,6 +128,7 @@ install_bat () {
 install_duf () {
         printf "Downloading...\n" && \
         check_latest duf && \
+	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
         mkdir $tmpdir/duf && cd $tmpdir/duf && \
         wget -q https://github.com/muesli/duf/releases/download/v$latestrelease/duf_${latestrelease}_linux_x86_64.tar.gz && \
         printf "Unpacking...\n" && \
@@ -138,6 +142,7 @@ install_duf () {
 install_dust () {
         printf "Downloading...\n" && \
         check_latest dust && \
+	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
         mkdir $tmpdir/dust && cd $tmpdir/dust && \
         wget -q https://github.com/bootandy/dust/releases/download/v$latestrelease/dust-v$latestrelease-x86_64-unknown-linux-gnu.tar.gz && \
         printf "Unpacking...\n" && \
@@ -151,6 +156,7 @@ install_dust () {
 install_exa () {
         printf "Downloading...\n" && \
 	check_latest exa && \
+	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
         mkdir $tmpdir/exa && cd $tmpdir/exa && \
         wget -q https://github.com/ogham/exa/releases/download/v$latestrelease/exa-linux-x86_64-v$latestrelease.zip && \
         printf "Unpacking...\n" && \
@@ -164,6 +170,7 @@ install_exa () {
 install_hcloud () {
         printf "Downloading...\n" && \
 	check_latest hcloud && \
+	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
         mkdir $tmpdir/hcloud && cd $tmpdir/hcloud && \
         wget -q https://github.com/hetznercloud/cli/releases/download/v$latestrelease/hcloud-linux-amd64.tar.gz && \
         printf "Unpacking...\n" && \
@@ -177,6 +184,7 @@ install_hcloud () {
 install_hugo () {
         printf "Downloading...\n" && \
 	check_latest hugo && \
+	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
         mkdir $tmpdir/hugo && cd $tmpdir/hugo && \
         wget -q https://github.com/gohugoio/hugo/releases/download/v$latestrelease/hugo_extended_${latestrelease}_Linux-64bit.tar.gz && \
         printf "Unpacking...\n" && \
@@ -190,6 +198,7 @@ install_hugo () {
 install_rclone () {
         printf "Downloading...\n" && \
 	check_latest rclone && \
+	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
         mkdir $tmpdir/rclone && cd $tmpdir/rclone && \
         wget -q https://github.com/rclone/rclone/releases/download/v$latestrelease/rclone-v$latestrelease-linux-amd64.zip && \
         printf "Unpacking...\n" && \
@@ -203,6 +212,7 @@ install_rclone () {
 install_restic () {
         printf "Downloading...\n" && \
 	check_latest restic && \
+	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
         mkdir $tmpdir/restic && cd $tmpdir/restic && \
         wget -q https://github.com/restic/restic/releases/download/v$latestrelease/restic_${latestrelease}_linux_amd64.bz2 && \
         printf "Unpacking...\n" && \
@@ -237,7 +247,7 @@ fi
 
 # Dependecies option
 if [ $1 = "dependencies" ]; then
-	check_argscount 1
+	check_argscount 1 1
 	for i in "${dependencies[@]}"
         do
                 check_package $i
@@ -246,13 +256,13 @@ fi
 
 # Help option
 if [ $1 = "help" ]; then
-	check_argscount 1
+	check_argscount 1 1
 	help $1
 fi
 
 # Install option
 if [ $1 = "install" ]; then
-	check_argscount 2
+	check_argscount 2 3
 	if ! [[ "${apps[@]}" =~ (^|[[:space:]])"$2"($|[[:space:]]) ]]; then
         	printf "ERROR: No valid app!\n\n"
         	help
@@ -265,7 +275,7 @@ if [ $1 = "install" ]; then
 	fi
 	check_dependencies && \
 	confirmation Installing $2 && \
-	install_$2
+	install_$2 $3
 fi
 
 # Info option
@@ -299,7 +309,7 @@ fi
 
 # Update option
 if [ $1 = "update" ]; then
-	check_argscount 2
+	check_argscount 2 3
         if ! [[ "${apps[@]}" =~ (^|[[:space:]])"$2"($|[[:space:]]) ]]; then
                 printf "ERROR: No valid app!\n\n"
                 help
@@ -312,12 +322,12 @@ if [ $1 = "update" ]; then
         fi
         check_dependencies && \
 	confirmation Updating $2 && \
-        install_$2
+        install_$2 $3
 fi
 
 # Uninstall option
 if [ $1 = "uninstall" ]; then
-	check_argscount 2
+	check_argscount 2 2
 	if ! [[ "${apps[@]}" =~ (^|[[:space:]])"$2"($|[[:space:]]) ]]; then
                 printf "ERROR: No valid app!\n\n"
                 help
@@ -333,6 +343,6 @@ if [ $1 = "uninstall" ]; then
 fi
 
 if [ $1 = "version" ]; then
-        check_argscount 1
-        printf "v%s\n" $scriptversion
+        check_argscount 1 1
+        printf "%s v%s\n" $(basename $0) $scriptversion
 fi

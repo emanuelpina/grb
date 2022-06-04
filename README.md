@@ -12,7 +12,9 @@ sudo grb [OPTION] [APP]
  - info - list all apps and check if they're installed
  - info [APP] - check if an app is installed and its local and latest available versions
  - install [APP] - install an app
+ - install [APP] [VERSION] - install a specific version of an app
  - update [APP] - update an app to its latest version
+ - update [APP] [VERSION] - update an app to a specific version
  - uninstall [APP] - uninstall an app
  - version - print grb version
 
