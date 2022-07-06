@@ -10,8 +10,8 @@ tmpdir="/tmp"                   # Temporary directory for where files will be do
 # Variables
 dependencies=("bzip2" "curl" "rsync" "tar" "unzip" "wget")
 apps=("bat" "bottom" "duf" "dust" "exa" "hcloud" "hugo" "rclone" "restic")
-options=("dependencies" "help" "install" "info" "update" "uninstall" "version")
-scriptversion="1.2.0"
+options=("dependencies" "help" "install" "info" "self-update" "update" "uninstall" "version")
+scriptversion="1.3.0"
 
 # Check arguments count
 argscount=$#
@@ -67,6 +67,7 @@ help () {
 	printf "\tinfo [APP]\t\t - check if an app is installed and its local and latest available versions\n"
 	printf "\tinstall [APP]\t\t - install an app\n"
 	printf "\tinstall [APP] [VERSION]\t - install a specific version of an app\n"
+        printf "\tself-update\t\t - update %s to its latest version\n" $(basename $0)
 	printf "\tupdate [APP]\t\t - update an app to its latest version\n"
 	printf "\tupdate [APP] [VERSION]\t - update an app to a specific version\n"
 	printf "\tuninstall [APP]\t\t - uninstall an app\n"
@@ -335,6 +336,20 @@ if [ $1 = "info" ] && [ $# -gt 2 ];then
 	printf "ERROR: Too many arguments!\n\n"
 	help
 	exit 1
+fi
+
+# Self-update option
+if [ $1 = "self-update" ]; then
+        check_argscount 1 1
+        confirmation Updating $(basename $0) && \
+        printf "Downloading...\n" && \
+        cd $tmpdir && \
+        wget -q https://raw.githubusercontent.com/emanuelpina/grb/main/grb && \
+        printf "Installing...\n" && \
+        chown root:root $tmpdir/grb && \
+        chmod +x $tmpdir/grb && \
+        mv $tmpdir/grb $installdir/ && \
+        printf "Done!\n\n%s is now at v%s\n" $(basename $0) $scriptversion
 fi
 
 # Update option
