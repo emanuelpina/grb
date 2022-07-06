@@ -9,9 +9,9 @@ tmpdir="/tmp"                   # Temporary directory for where files will be do
 
 # Variables
 dependencies=("bzip2" "curl" "rsync" "tar" "unzip" "wget")
-apps=("bat" "bottom" "duf" "dust" "exa" "hcloud" "hugo" "rclone" "restic")
+apps=("bat" "bottom" "ctop" "duf" "dust" "exa" "hcloud" "hugo" "rclone" "restic")
 options=("dependencies" "help" "install" "info" "self-update" "update" "uninstall" "version")
-scriptversion="1.3.0"
+scriptversion="1.4.0"
 
 # Check arguments count
 argscount=$#
@@ -75,6 +75,7 @@ help () {
 	printf "Available apps:\n"
 	printf "\tbat\t - A cat(1) clone with wings\n"
 	printf "\tbottom\t - Yet another cross-platform graphical process/system monitor\n"
+        printf "\tctop\t - Top-like interface for container metrics\n"
         printf "\tduf\t - Disk Usage/Free Utility - a better 'df' alternative\n"
 	printf "\tdust\t - A more intuitive version of du in rust\n"
 	printf "\texa\t - A modern replacement for ‘ls’\n"
@@ -101,6 +102,7 @@ confirmation () {
 check_latest () {
 	if [ $1 = "bat" ]; then	repo="sharkdp/bat"; fi
         if [ $1 = "bottom" ]; then repo="ClementTsang/bottom"; fi
+        if [ $1 = "ctop" ]; then repo="bcicen/ctop"; fi
 	if [ $1 = "duf" ]; then repo="muesli/duf"; fi
 	if [ $1 = "dust" ]; then repo="bootandy/dust"; fi
 	if [ $1 = "exa" ]; then repo="ogham/exa"; fi
@@ -120,7 +122,9 @@ check_latest () {
 check_local_version () {
 	if [ $1 = hcloud ] || [ $1 = hugo ] || [ $1 = restic ]; then
 		localversion=$($1 version)
-	else
+	elif [ $1 = ctop ]; then
+                localversion=$($1 -v)
+        else
 		localversion=$($1 --version)
 	fi
 }
@@ -152,6 +156,19 @@ install_bottom () {
         rsync --archive --chown=root:root $tmpdir/bottom/btm $installdir/ && \
         printf "Cleaning up...\n" && \
         rm -rf $tmpdir/bottom && \
+        printf "Done!\n"
+}
+install_ctop () {
+        printf "Downloading...\n" && \
+	check_latest ctop && \
+	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
+        mkdir $tmpdir/ctop && cd $tmpdir/ctop && \
+        wget -q https://github.com/bcicen/ctop/releases/download/v$latestrelease/ctop-$latestrelease-linux-amd64 && \
+        printf "Installing...\n" && \
+        rsync --archive --chown=root:root --chmod=+x $tmpdir/ctop/ctop-$latestrelease-linux-amd64 $installdir/ && \
+        mv $installdir/ctop-$latestrelease-linux-amd64 $installdir/ctop && \
+        printf "Cleaning up...\n" && \
+        rm -rf $tmpdir/ctop && \
         printf "Done!\n"
 }
 install_duf () {

@@ -22,6 +22,7 @@ sudo grb [OPTION] [APP]
 ### Available apps
  - bat - A cat(1) clone with wings
  - bottom - Yet another cross-platform graphical process/system monitor
+ - ctop - Top-like interface for container metrics
  - duf - Disk Usage/Free Utility - a better 'df' alternative
  - dust - A more intuitive version of du in rust
  - exa - A modern replacement for ‘ls’
