@@ -9,9 +9,9 @@ tmpdir="/tmp"                   # Temporary directory for where files will be do
 
 # Variables
 dependencies=("bzip2" "curl" "rsync" "tar" "unzip" "wget")
-apps=("bat" "duf" "dust" "exa" "hcloud" "hugo" "rclone" "restic")
+apps=("bat" "bottom" "duf" "dust" "exa" "hcloud" "hugo" "rclone" "restic")
 options=("dependencies" "help" "install" "info" "update" "uninstall" "version")
-scriptversion="1.1.0"
+scriptversion="1.2.0"
 
 # Check arguments count
 argscount=$#
@@ -28,9 +28,16 @@ check_argscount () {
 	fi
 }
 
+# Check for and change command to app alias
+check_app_alias () {
+        app_command=$1
+        if [ $1 = "bottom" ]; then app_command="btm"; fi
+}
+
 # Check if package is intalled
 check_package () {
-	command -v $1 >/dev/null 2>&1 \
+        check_app_alias $1
+	command -v $app_command >/dev/null 2>&1 \
 	&& printf "%s is installed\n" $1 \
 	|| printf "%s is NOT installed\n" $1
 }
@@ -66,7 +73,8 @@ help () {
         printf "\tversion\t\t\t - print %s version\n\n" $(basename $0)
 	printf "Available apps:\n"
 	printf "\tbat\t - A cat(1) clone with wings\n"
-	printf "\tduf\t - Disk Usage/Free Utility - a better 'df' alternative\n"
+	printf "\tbottom\t - Yet another cross-platform graphical process/system monitor\n"
+        printf "\tduf\t - Disk Usage/Free Utility - a better 'df' alternative\n"
 	printf "\tdust\t - A more intuitive version of du in rust\n"
 	printf "\texa\t - A modern replacement for ‘ls’\n"
 	printf "\thcloud\t - A command-line interface for Hetzner Cloud\n"
@@ -91,6 +99,7 @@ confirmation () {
 # Check latest version
 check_latest () {
 	if [ $1 = "bat" ]; then	repo="sharkdp/bat"; fi
+        if [ $1 = "bottom" ]; then repo="ClementTsang/bottom"; fi
 	if [ $1 = "duf" ]; then repo="muesli/duf"; fi
 	if [ $1 = "dust" ]; then repo="bootandy/dust"; fi
 	if [ $1 = "exa" ]; then repo="ogham/exa"; fi
@@ -98,7 +107,12 @@ check_latest () {
 	if [ $1 = "hugo" ]; then repo="gohugoio/hugo"; fi
 	if [ $1 = "rclone" ]; then repo="rclone/rclone"; fi
 	if [ $1 = "restic" ]; then repo="restic/restic"; fi
-	latestrelease=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+        
+        if [ $1 = "bottom" ]; then
+                latestrelease=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+        else
+	        latestrelease=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
+        fi
 }
 
 # Check local version
@@ -123,6 +137,20 @@ install_bat () {
         rsync --archive --chown=root:root $tmpdir/bat/bat-v$latestrelease-x86_64-unknown-linux-gnu/bat $installdir/ && \
         printf "Cleaning up...\n" && \
         rm -rf $tmpdir/bat && \
+        printf "Done!\n"
+}
+install_bottom () {
+        printf "Downloading...\n" && \
+	check_latest bottom && \
+	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
+        mkdir $tmpdir/bottom && cd $tmpdir/bottom && \
+        wget -q https://github.com/ClementTsang/bottom/releases/download/$latestrelease/bottom_x86_64-unknown-linux-gnu.tar.gz && \
+        printf "Unpacking...\n" && \
+        tar -xf bottom_x86_64-unknown-linux-gnu.tar.gz && \
+        printf "Installing...\n" && \
+        rsync --archive --chown=root:root $tmpdir/bottom/btm $installdir/ && \
+        printf "Cleaning up...\n" && \
+        rm -rf $tmpdir/bottom && \
         printf "Done!\n"
 }
 install_duf () {
@@ -268,7 +296,8 @@ if [ $1 = "install" ]; then
         	help
 		exit 1
 	fi
-	if command -v $2 >/dev/null 2>&1; then
+        check_app_alias $2
+	if command -v $app_command >/dev/null 2>&1; then
                 printf "%s is ALREADY installed\nUse the update command to get the latest release\n" $2
 		printf "Example: sudo %s update %s\n" $(basename $0) $2
 		exit 1
@@ -291,9 +320,10 @@ if [ $1 = "info" ] && [ $# -eq 2 ]; then
 		help
 		exit 1
 	fi
-	if command -v $2 >/dev/null 2>&1; then
-                printf "%s is installed\n\n" $2
-		check_local_version $2 && \
+        check_app_alias $2
+	if command -v $app_command >/dev/null 2>&1; then
+                printf "%s is installed\n\n" $app_command
+		check_local_version $app_command && \
 		printf "Local version:\n%s\n\n" "$localversion"
 	else
 		printf "%s is NOT installed\n" $2
@@ -315,7 +345,8 @@ if [ $1 = "update" ]; then
                 help
                 exit 1
         fi
-        if ! command -v $2 >/dev/null 2>&1; then
+        check_app_alias $2
+        if ! command -v $app_command >/dev/null 2>&1; then
                 printf "%s is NOT installed\nUse the install command to get it\n" $2
                 printf "Example: sudo %s install %s\n" $(basename $0) $2
                 exit 1
@@ -333,12 +364,13 @@ if [ $1 = "uninstall" ]; then
                 help
                 exit 1
         fi
-	if ! command -v $2 >/dev/null 2>&1; then
+        check_app_alias $2
+	if ! command -v $app_command >/dev/null 2>&1; then
 		printf "ERROR: %s is NOT installed\n" $2
 		exit 1
 	fi
 	confirmation Uninstalling $2
-	rm -rf $installdir/$2
+	rm -rf $installdir/$app_command
 	printf "Done!\n"
 fi
 
