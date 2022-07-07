@@ -11,7 +11,7 @@ tmpdir="/tmp"                   # Temporary directory for where files will be do
 dependencies=("bzip2" "curl" "rsync" "tar" "unzip" "wget")
 apps=("bat" "bottom" "ctop" "duf" "dust" "exa" "hcloud" "hugo" "rclone" "restic")
 options=("dependencies" "help" "install" "info" "self-update" "update" "uninstall" "version")
-scriptversion="1.4.0"
+scriptversion="1.4.1"
 
 # Check arguments count
 argscount=$#
@@ -366,7 +366,8 @@ if [ $1 = "self-update" ]; then
         chown root:root $tmpdir/grb && \
         chmod +x $tmpdir/grb && \
         mv $tmpdir/grb $installdir/ && \
-        printf "Done!\n\n%s is now at v%s\n" $(basename $0) $scriptversion
+        newversion=$(sudo grb version | cut -c 6-10)
+        printf "Done!\n\n%s is now at v%s\n" $(basename $0) $newversion
 fi
 
 # Update option
