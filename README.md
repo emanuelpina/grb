@@ -26,7 +26,9 @@ sudo grb [OPTION] [APP]
  - duf - Disk Usage/Free Utility - a better 'df' alternative
  - dust - A more intuitive version of du in rust
  - exa - A modern replacement for ‘ls’
+ - github - GitHub’s official command line tool
  - hcloud - A command-line interface for Hetzner Cloud
+ - helix - A post-modern modal text editor
  - hugo - The world’s fastest framework for building websites
  - rclone - rsync for cloud storage
  - restic - Fast, secure, efficient backup program
