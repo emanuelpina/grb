@@ -25,7 +25,7 @@ sudo grb [OPTION] [APP]
  - ctop - Top-like interface for container metrics
  - duf - Disk Usage/Free Utility - a better 'df' alternative
  - dust - A more intuitive version of du in rust
- - exa - A modern replacement for ‘ls’
+ - eza - A modern replacement for ‘ls’
  - github - GitHub’s official command line tool
  - hcloud - A command-line interface for Hetzner Cloud
  - helix - A post-modern modal text editor

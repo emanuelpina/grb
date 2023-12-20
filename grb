@@ -9,7 +9,7 @@ tmpdir="/tmp"                   # Temporary directory for where files will be do
 
 # Variables
 dependencies=("bzip2" "curl" "rsync" "tar" "unzip" "wget")
-apps=("bat" "bottom" "ctop" "duf" "dust" "exa" "github" "hcloud" "helix" "hugo" "rclone" "restic")
+apps=("bat" "bottom" "ctop" "duf" "dust" "eza" "github" "hcloud" "helix" "hugo" "rclone" "restic")
 options=("dependencies" "help" "install" "info" "self-update" "update" "uninstall" "version")
 scriptversion="1.6.0"
 
@@ -91,7 +91,7 @@ help () {
 	printf "\tctop\t - Top-like interface for container metrics\n"
 	printf "\tduf\t - Disk Usage/Free Utility - a better 'df' alternative\n"
 	printf "\tdust\t - A more intuitive version of du in rust\n"
-	printf "\texa\t - A modern replacement for ‘ls’\n"
+	printf "\teza\t - A modern replacement for ‘ls’\n"
 	printf "\tgithub\t - GitHub’s official command line tool\n"
 	printf "\thcloud\t - A command-line interface for Hetzner Cloud\n"
 	printf "\thelix\t - A post-modern modal text editor\n"
@@ -120,7 +120,7 @@ check_latest () {
 	if [ $1 = "ctop" ]; then repo="bcicen/ctop"; fi
 	if [ $1 = "duf" ]; then repo="muesli/duf"; fi
 	if [ $1 = "dust" ]; then repo="bootandy/dust"; fi
-	if [ $1 = "exa" ]; then repo="ogham/exa"; fi
+	if [ $1 = "eza" ]; then repo="eza-community/eza"; fi
 	if [ $1 = "github" ]; then repo="cli/cli"; fi
 	if [ $1 = "hcloud" ]; then repo="hetznercloud/cli"; fi
 	if [ $1 = "helix" ]; then repo="helix-editor/helix"; fi
@@ -226,23 +226,20 @@ install_dust () {
 	rm -rf $tmpdir/dust && \
 	printf "Done!\n"
 }
-install_exa () {
+install_eza () {
 	printf "Downloading...\n" && \
-	check_latest exa && \
+	check_latest eza && \
 	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
-	if [ $arch = "aarch64" ]; then
-		printf "ERROR: exa doesn't have a release to aarch64 architecture!\n\n"
-		exit 1
-	fi && \
-	if [ $arch = "x86_64" ]; then filename="exa-linux-x86_64-v$latestrelease.zip"; fi && \
-	mkdir $tmpdir/exa && cd $tmpdir/exa && \
-	wget -q https://github.com/ogham/exa/releases/download/v$latestrelease/$filename && \
+	if [ $arch = "aarch64" ]; then filename="eza_aarch64-unknown-linux-gnu.zip"; fi && \
+	if [ $arch = "x86_64" ]; then filename="eza_x86_64-unknown-linux-gnu.zip"; fi && \
+	mkdir $tmpdir/eza && cd $tmpdir/eza && \
+	wget -q https://github.com/eza-community/eza/releases/download/v$latestrelease/$filename && \
 	printf "Unpacking...\n" && \
 	unzip -xq $filename && \
 	printf "Installing...\n" && \
-	rsync --archive --chown=root:root $tmpdir/exa/bin/exa $installdir/ && \
+	rsync --archive --chown=root:root $tmpdir/eza/eza $installdir/ && \
 	printf "Cleaning up...\n" && \
-	rm -rf $tmpdir/exa && \
+	rm -rf $tmpdir/eza && \
 	printf "Done!\n"
 }
 install_github () {
