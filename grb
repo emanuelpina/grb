@@ -11,7 +11,7 @@ tmpdir="/tmp"                   # Temporary directory for where files will be do
 dependencies=("bzip2" "curl" "rsync" "tar" "unzip" "wget")
 apps=("bat" "bottom" "ctop" "duf" "dust" "eza" "github" "hcloud" "helix" "hugo" "rclone" "restic")
 options=("dependencies" "help" "install" "info" "self-update" "update" "uninstall" "version")
-scriptversion="1.6.0"
+scriptversion="1.7.0"
 
 # Check architecture
 check_arch () {
