@@ -9,9 +9,9 @@ tmpdir="/tmp"                   # Temporary directory for where files will be do
 
 # Variables
 dependencies=("bzip2" "curl" "rsync" "tar" "unzip" "wget")
-apps=("bat" "bottom" "ctop" "duf" "dust" "eza" "github" "hcloud" "helix" "hugo" "rclone" "restic")
+apps=("bat" "bottom" "ctop" "duf" "dust" "eza" "fzf" "github" "hcloud" "helix" "hugo" "rclone" "restic" "zoxide")
 options=("dependencies" "help" "install" "info" "self-update" "update" "uninstall" "version")
-scriptversion="1.7.0"
+scriptversion="1.8.0"
 
 # Check architecture
 check_arch () {
@@ -92,12 +92,14 @@ help () {
 	printf "\tduf\t - Disk Usage/Free Utility - a better 'df' alternative\n"
 	printf "\tdust\t - A more intuitive version of du in rust\n"
 	printf "\teza\t - A modern replacement for ‘ls’\n"
+	printf "\tfzf\t - A command-line fuzzy finder\n"
 	printf "\tgithub\t - GitHub’s official command line tool\n"
 	printf "\thcloud\t - A command-line interface for Hetzner Cloud\n"
 	printf "\thelix\t - A post-modern modal text editor\n"
 	printf "\thugo\t - The world’s fastest framework for building websites\n"
 	printf "\trclone\t - rsync for cloud storage\n"
 	printf "\trestic\t - Fast, secure, efficient backup program\n"
+	printf "\tzoxide\t - A smarter cd command\n"
 	printf "\n"
 }
 
@@ -121,14 +123,16 @@ check_latest () {
 	if [ $1 = "duf" ]; then repo="muesli/duf"; fi
 	if [ $1 = "dust" ]; then repo="bootandy/dust"; fi
 	if [ $1 = "eza" ]; then repo="eza-community/eza"; fi
+	if [ $1 = "fzf" ]; then repo="junegunn/fzf"; fi
 	if [ $1 = "github" ]; then repo="cli/cli"; fi
 	if [ $1 = "hcloud" ]; then repo="hetznercloud/cli"; fi
 	if [ $1 = "helix" ]; then repo="helix-editor/helix"; fi
 	if [ $1 = "hugo" ]; then repo="gohugoio/hugo"; fi
 	if [ $1 = "rclone" ]; then repo="rclone/rclone"; fi
 	if [ $1 = "restic" ]; then repo="restic/restic"; fi
+	if [ $1 = "zoxide" ]; then repo="ajeetdsouza/zoxide"; fi
 
-	if [ $1 = "bottom" ] || [ $1 = "helix" ] ; then
+	if [ $1 = "bottom" ] || [ $1 = "fzf" ] || [ $1 = "helix" ] ; then
 		latestrelease=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
 	else
 		latestrelease=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
@@ -242,6 +246,22 @@ install_eza () {
 	rm -rf $tmpdir/eza && \
 	printf "Done!\n"
 }
+install_fzf () {
+	printf "Downloading...\n" && \
+	check_latest fzf && \
+	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
+	if [ $arch = "aarch64" ]; then filename="fzf-${latestrelease}-linux_arm64.tar.gz"; fi && \
+	if [ $arch = "x86_64" ]; then filename="fzf-${latestrelease}-linux_amd64.tar.gz"; fi && \
+	mkdir $tmpdir/fzf && cd $tmpdir/fzf && \
+	wget -q https://github.com/junegunn/fzf/releases/download/$latestrelease/$filename && \
+	printf "Unpacking...\n" && \
+	tar -xf $filename && \
+	printf "Installing...\n" && \
+	rsync --archive --chown=root:root $tmpdir/fzf/fzf $installdir/ && \
+	printf "Cleaning up...\n" && \
+	rm -rf $tmpdir/fzf && \
+	printf "Done!\n"
+}
 install_github () {
 	printf "Downloading...\n" && \
 	check_latest github && \
@@ -338,6 +358,22 @@ install_restic () {
 	mv $installdir/$filename $installdir/restic && \
 	printf "Cleaning up...\n" && \
 	rm -rf $tmpdir/restic && \
+	printf "Done!\n"
+}
+install_zoxide () {
+	printf "Downloading...\n" && \
+	check_latest zoxide && \
+	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
+	if [ $arch = "aarch64" ]; then filename="zoxide-${latestrelease}-aarch64-unknown-linux-musl.tar.gz"; fi && \
+	if [ $arch = "x86_64" ]; then filename="zoxide-${latestrelease}-x86_64-unknown-linux-musl.tar.gz"; fi && \
+	mkdir $tmpdir/zoxide && cd $tmpdir/zoxide && \
+	wget -q https://github.com/ajeetdsouza/zoxide/releases/download/v$latestrelease/$filename && \
+	printf "Unpacking...\n" && \
+	tar -xf $filename && \
+	printf "Installing...\n" && \
+	rsync --archive --chown=root:root $tmpdir/zoxide/zoxide $installdir/ && \
+	printf "Cleaning up...\n" && \
+	rm -rf $tmpdir/zoxide && \
 	printf "Done!\n"
 }
 
