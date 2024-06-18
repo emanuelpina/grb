@@ -9,9 +9,9 @@ tmpdir="/tmp"                   # Temporary directory for where files will be do
 
 # Variables
 dependencies=("bzip2" "curl" "rsync" "tar" "unzip" "wget")
-apps=("bat" "bottom" "ctop" "duf" "dust" "eza" "fzf" "github" "hcloud" "helix" "hugo" "rclone" "restic" "zoxide")
+apps=("bat" "bottom" "ctop" "duf" "dust" "eza" "fzf" "github" "hcloud" "helix" "hugo" "rclone" "restic" "starship" "zoxide")
 options=("dependencies" "help" "install" "info" "self-update" "update" "uninstall" "version")
-scriptversion="1.8.0"
+scriptversion="1.9.0"
 
 # Check architecture
 check_arch () {
@@ -99,6 +99,7 @@ help () {
 	printf "\thugo\t - The world’s fastest framework for building websites\n"
 	printf "\trclone\t - rsync for cloud storage\n"
 	printf "\trestic\t - Fast, secure, efficient backup program\n"
+	printf "\tstarship - The minimal, blazing-fast, and infinitely customizable prompt for any shell\n"
 	printf "\tzoxide\t - A smarter cd command\n"
 	printf "\n"
 }
@@ -130,6 +131,7 @@ check_latest () {
 	if [ $1 = "hugo" ]; then repo="gohugoio/hugo"; fi
 	if [ $1 = "rclone" ]; then repo="rclone/rclone"; fi
 	if [ $1 = "restic" ]; then repo="restic/restic"; fi
+	if [ $1 = "starship" ]; then repo="starship/starship"; fi
 	if [ $1 = "zoxide" ]; then repo="ajeetdsouza/zoxide"; fi
 
 	if [ $1 = "bottom" ] || [ $1 = "fzf" ] || [ $1 = "helix" ] ; then
@@ -358,6 +360,22 @@ install_restic () {
 	mv $installdir/$filename $installdir/restic && \
 	printf "Cleaning up...\n" && \
 	rm -rf $tmpdir/restic && \
+	printf "Done!\n"
+}
+install_starship () {
+	printf "Downloading...\n" && \
+	check_latest starship && \
+	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
+	if [ $arch = "aarch64" ]; then filename="starship-aarch64-unknown-linux-musl"; fi && \
+	if [ $arch = "x86_64" ]; then filename="starship-x86_64-unknown-linux-musl"; fi && \
+	mkdir $tmpdir/starship && cd $tmpdir/starship && \
+	wget -q https://github.com/starship/starship/releases/download/v$latestrelease/${filename}.tar.gz && \
+	printf "Unpacking...\n" && \
+	tar -xf ${filename}.tar.gz && \
+	printf "Installing...\n" && \
+	rsync --archive --chown=root:root $tmpdir/starship/starship $installdir/ && \
+	printf "Cleaning up...\n" && \
+	rm -rf $tmpdir/starship && \
 	printf "Done!\n"
 }
 install_zoxide () {
