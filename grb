@@ -11,7 +11,7 @@ tmpdir="/tmp"                   # Temporary directory for where files will be do
 dependencies=("bzip2" "curl" "rsync" "tar" "unzip" "wget")
 apps=("bat" "bottom" "ctop" "duf" "dust" "eza" "fzf" "github" "hcloud" "helix" "hugo" "rclone" "restic" "starship" "zoxide")
 options=("dependencies" "help" "install" "info" "self-update" "update" "uninstall" "version")
-scriptversion="1.9.0"
+scriptversion="1.9.1"
 
 # Check architecture
 check_arch () {
@@ -134,7 +134,7 @@ check_latest () {
 	if [ $1 = "starship" ]; then repo="starship/starship"; fi
 	if [ $1 = "zoxide" ]; then repo="ajeetdsouza/zoxide"; fi
 
-	if [ $1 = "bottom" ] || [ $1 = "fzf" ] || [ $1 = "helix" ] ; then
+	if [ $1 = "bottom" ] || [ $1 = "helix" ] ; then
 		latestrelease=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
 	else
 		latestrelease=$(curl -s "https://api.github.com/repos/$repo/releases/latest" | grep '"tag_name":' | sed -E 's/.*"v([^"]+)".*/\1/')
@@ -255,7 +255,7 @@ install_fzf () {
 	if [ $arch = "aarch64" ]; then filename="fzf-${latestrelease}-linux_arm64.tar.gz"; fi && \
 	if [ $arch = "x86_64" ]; then filename="fzf-${latestrelease}-linux_amd64.tar.gz"; fi && \
 	mkdir $tmpdir/fzf && cd $tmpdir/fzf && \
-	wget -q https://github.com/junegunn/fzf/releases/download/$latestrelease/$filename && \
+	wget -q https://github.com/junegunn/fzf/releases/download/v$latestrelease/$filename && \
 	printf "Unpacking...\n" && \
 	tar -xf $filename && \
 	printf "Installing...\n" && \
