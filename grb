@@ -9,7 +9,7 @@ tmpdir="/tmp"                   # Temporary directory for where files will be do
 
 # Variables
 dependencies=("bzip2" "curl" "rsync" "tar" "unzip" "wget")
-apps=("bat" "bottom" "ctop" "duf" "dust" "eza" "fzf" "github" "hcloud" "helix" "hugo" "rclone" "restic" "starship" "zoxide")
+apps=("bat" "bottom" "ctop" "duf" "dust" "eza" "fzf" "github" "hcloud" "helix" "hugo" "mailpit" "rclone" "restic" "starship" "zoxide")
 options=("dependencies" "help" "install" "info" "self-update" "update" "uninstall" "version")
 scriptversion="1.9.1"
 
@@ -97,6 +97,7 @@ help () {
 	printf "\thcloud\t - A command-line interface for Hetzner Cloud\n"
 	printf "\thelix\t - A post-modern modal text editor\n"
 	printf "\thugo\t - The world’s fastest framework for building websites\n"
+  printf "\tmailpit\t - An email and SMTP testing tool with API for developers\n"
 	printf "\trclone\t - rsync for cloud storage\n"
 	printf "\trestic\t - Fast, secure, efficient backup program\n"
 	printf "\tstarship - The minimal, blazing-fast, and infinitely customizable prompt for any shell\n"
@@ -129,6 +130,7 @@ check_latest () {
 	if [ $1 = "hcloud" ]; then repo="hetznercloud/cli"; fi
 	if [ $1 = "helix" ]; then repo="helix-editor/helix"; fi
 	if [ $1 = "hugo" ]; then repo="gohugoio/hugo"; fi
+  if [ $1 = "mailpit" ]; then repo="axllent/mailpit"; fi
 	if [ $1 = "rclone" ]; then repo="rclone/rclone"; fi
 	if [ $1 = "restic" ]; then repo="restic/restic"; fi
 	if [ $1 = "starship" ]; then repo="starship/starship"; fi
@@ -143,7 +145,7 @@ check_latest () {
 
 # Check local version
 check_local_version () {
-	if [ $1 = hcloud ] || [ $1 = hugo ] || [ $1 = restic ]; then
+	if [ $1 = hcloud ] || [ $1 = hugo ] || [ $1 = mailpit ] || [ $1 = restic ]; then
 		localversion=$($1 version)
 	elif [ $1 = ctop ]; then
 		localversion=$($1 -v)
@@ -327,6 +329,22 @@ install_hugo () {
 	rsync --archive --chown=root:root $tmpdir/hugo/hugo $installdir/ && \
 	printf "Cleaning up...\n" && \
 	rm -rf $tmpdir/hugo && \
+	printf "Done!\n"
+}
+install_mailpit () {
+	printf "Downloading...\n" && \
+	check_latest mailpit && \
+	if ! [ -z "$1" ]; then latestrelease="${1}"; fi && \
+	if [ $arch = "aarch64" ]; then filename="mailpit-linux-arm64.tar.gz"; fi && \
+	if [ $arch = "x86_64" ]; then filename="mailpit-linux-amd64.tar.gz"; fi && \
+	mkdir $tmpdir/mailpit && cd $tmpdir/mailpit && \
+	wget -q https://github.com/axllent/mailpit/releases/download/v$latestrelease/$filename && \
+	printf "Unpacking...\n" && \
+	tar -xf $filename && \
+	printf "Installing...\n" && \
+	rsync --archive --chown=root:root $tmpdir/mailpit/mailpit $installdir/ && \
+	printf "Cleaning up...\n" && \
+	rm -rf $tmpdir/mailpit && \
 	printf "Done!\n"
 }
 install_rclone () {
@@ -536,6 +554,7 @@ if [ $1 = "uninstall" ]; then
 	printf "Done!\n"
 fi
 
+# Version option
 if [ $1 = "version" ]; then
 	check_argscount 1 1
 	printf "%s v%s\n" $(basename $0) $scriptversion
