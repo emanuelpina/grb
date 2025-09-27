@@ -8,10 +8,10 @@ tmpdir="/tmp"                   # Temporary directory for where files will be do
 ## END of configurable variables
 
 # Variables
-dependencies=("bzip2" "curl" "rsync" "tar" "unzip" "wget")
+dependencies=("bzip2" "curl" "rsync" "tar" "unzip" "wget" "xz")
 apps=("bat" "bottom" "ctop" "duf" "dust" "eza" "fzf" "github" "hcloud" "helix" "hugo" "mailpit" "rclone" "restic" "starship" "zoxide")
 options=("dependencies" "help" "install" "info" "self-update" "update" "uninstall" "version")
-scriptversion="1.10.0"
+scriptversion="1.10.1"
 
 # Check architecture
 check_arch () {
